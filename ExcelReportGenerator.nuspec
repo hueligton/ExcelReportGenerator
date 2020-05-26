@@ -1,0 +1,22 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ExcelReportGenerator</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Hueligton</authors>
+    <owners>Hueligton</owners>
+    <licenseUrl></licenseUrl>
+    <projectUrl></projectUrl>
+    <iconUrl></iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Implementation to easily generate Excel reports using EPPlus to generate Excel documents.</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2020</copyright>
+    <tags>EPPlus Excel Report Generator</tags>
+
+    <dependencies>
+      <dependency id="EPPlus" version="4.5.3.2" />
+    </dependencies>
+  </metadata>
+</package>
