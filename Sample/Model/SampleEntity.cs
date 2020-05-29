@@ -1,18 +1,17 @@
-﻿using ExcelReportGenerator.Interfaces;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExcelReportGenerator.Sample.Model
 {
-    public class SampleEntity : IReportable
+    public class SampleEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }
         [Required]
-        [ForeignKey("NestedSampleEntity")]
-        public int NestedSampleEntityId { get; set; }
-        public virtual NestedSampleEntity NestedSampleEntity { get; set; }
+        [ForeignKey("AnotherSampleEntity")]
+        public int AnotherSampleEntityId { get; set; }
+        public virtual AnotherSampleEntity AnotherSampleEntity { get; set; }
         public DateTime RegisterDate { get; set; }
     }
 }

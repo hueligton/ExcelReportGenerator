@@ -1,63 +1,76 @@
-﻿using ExcelReportGenerator.Application;
-using ExcelReportGenerator.Interfaces;
+﻿using ExcelReportGenerator.Generator;
+using ExcelReportGenerator.Models;
 using ExcelReportGenerator.Sample.Model;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 
 namespace ExcelReportGenerator.Sample
 {
-    public class SampleApplication : ReportGenerator
+    public class SampleApplication
     {
-        private List<SampleEntity> _mockContext { get; set; }
 
-        public SampleApplication()
+        public ExcelPackage GenerateExcelReport(ICollection<SampleEntity> sampleReportables, ICollection<AnotherSampleEntity> anotherSampleEntities, ICollection<OtherSampleEntity> otherSampleEntities)
         {
-            _mockContext = new List<SampleEntity>();
+            ReportGenerator reportGenerator = new ReportGenerator();
+
+            #region Worksheet sample 1
+            reportGenerator.CreateWorksheet("SampleTable1");
+
+            WorksheetColumns worksheetColumns1 = new WorksheetColumns();
+            worksheetColumns1.AddColumn<SampleEntity, int>("Id", e => e.Id <= 5 ? e.Id : 0);
+            worksheetColumns1.AddColumn<SampleEntity, string>("Name", e => e.Name == null ? "DefaultName" : e.Name);
+            worksheetColumns1.AddColumn<SampleEntity, DateTime>("Register Date", e => e.RegisterDate);
+            worksheetColumns1.AddColumn<SampleEntity, string>("City", e => e.AnotherSampleEntity.City);
+            worksheetColumns1.AddColumn<SampleEntity, string>("State", e => e.AnotherSampleEntity.State);
+            worksheetColumns1.AddColumn<SampleEntity, string>("Country", e => e.AnotherSampleEntity.Country);
+            worksheetColumns1.AddColumn<SampleEntity, string>("Active", e => e.AnotherSampleEntity.Active ? "Active" : "Inactive");
+
+            reportGenerator.AddColumnsToWorksheet("SampleTable1", worksheetColumns1);
+            reportGenerator.AddDataToWorksheet("SampleTable1", sampleReportables);
+            #endregion Worksheet sample 1
+
+            #region Worksheet sample 2
+            WorksheetColumns worksheetColumns2 = new WorksheetColumns();
+            worksheetColumns2.AddColumn<AnotherSampleEntity, string>("City", e => e.City);
+            worksheetColumns2.AddColumn<AnotherSampleEntity, string>("State", e => e.State);
+            worksheetColumns2.AddColumn<AnotherSampleEntity, string>("Country", e => e.Country);
+            reportGenerator.CreateWorksheet("SampleTable2", worksheetColumns2);
+            reportGenerator.AddDataToWorksheet("SampleTable2", anotherSampleEntities);
+            #endregion Worksheet sample 2
+
+            #region Worksheet sample 3
+            reportGenerator.CreateWorksheet("Other Sample Table");
+            WorksheetColumns worksheetColumns3 = new WorksheetColumns();
+            worksheetColumns3.AddColumn("Entity Id", typeof(int));
+            worksheetColumns3.AddColumn("Name", typeof(string));
+            worksheetColumns3.AddColumn("City", typeof(string));
+            worksheetColumns3.AddColumn("State", typeof(string));
+            worksheetColumns3.AddColumn("Country", typeof(string));
+            worksheetColumns3.AddColumn("Active", typeof(string));
+            reportGenerator.AddColumnsToWorksheet("Other Sample Table", worksheetColumns3);
+            AddDataToExcel(reportGenerator, "Other Sample Table", otherSampleEntities);
+            #endregion Worksheet sample 3
+
+            return reportGenerator.GenerateExcelPackage(saveFormattedData: true);
         }
 
-        public override ExcelPackage GenerateExcelReport(DateTime? initialDate, DateTime? finalDate)
+        protected void AddDataToExcel(ReportGenerator reportGenerator, string worksheetName, ICollection<OtherSampleEntity> entities)
         {
-            var tabelaQuery = _mockContext.AsQueryable();
-            ICollection<IReportable> reportables = FilterByDate(tabelaQuery, initialDate, finalDate);
-
-            DataTable dataTable = CreateTable("SampleTable");
-
-            Dictionary<string, Type> columns = GetColumns();
-            AddColumns(dataTable, columns);
-
-            AddDataToTable(dataTable, reportables);
-
-            return GenerateExcelPackage(true);
-        }
-
-        private Dictionary<string, Type> GetColumns()
-        {
-            return new Dictionary<string, Type>
+            foreach (OtherSampleEntity otherSampleEntity in entities)
             {
-                { "Id", typeof(int) },
-                { "Register Date", typeof(DateTime) },
-                { "Name", typeof(string) },
-                { "City", typeof(string) },
-                { "Estate", typeof(string) },
-                { "Country", typeof(string) },
-            };
-        }
-
-        protected override void AddDataToTable(DataTable table, ICollection<IReportable> reportables)
-        {
-            foreach (SampleEntity sampleEntity in reportables.OfType<SampleEntity>())
-            {
-                DataRow row = table.NewRow();
-                row["Id"] = sampleEntity.Id;
-                row["Register Date"] = sampleEntity.RegisterDate;
-                row["Name"]=sampleEntity.Name;
-                row["City"] = sampleEntity.NestedSampleEntity.City;
-                row["Estate"] = sampleEntity.NestedSampleEntity.State;
-                row["Country"] = sampleEntity.NestedSampleEntity.Country;
-                table.Rows.Add(row);
+                foreach (var anotherSampleEntity in otherSampleEntity.AnotherSampleEntities)
+                {
+                    DataRow row = reportGenerator.NewRow(worksheetName);
+                    row["Entity Id"] = otherSampleEntity.Id;
+                    row["Name"] = otherSampleEntity.Name;
+                    row["City"] = anotherSampleEntity.City;
+                    row["State"] = anotherSampleEntity.State;
+                    row["Country"] = anotherSampleEntity.Country;
+                    row["Active"] = anotherSampleEntity.Active ? "Active" : "Inactive";
+                    reportGenerator.AddRow(worksheetName, row);
+                }
             }
         }
     }

@@ -4,13 +4,13 @@ namespace ExcelReportGenerator.Sample
 {
     class SampleController
     {
-        public IActionResult GenerateExcelReport([FromServices] SampleApplication application, DateTime? initialDate, DateTime? finalDate)
-        {
-            using (var excel = application.GenerateExcelReport(initialDate, finalDate))
-            {
-                return File(excel.GetAsByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportName.xlsx");
-            }
-        }
+        //public IActionResult GenerateExcelReport([FromServices] SampleApplication application, DateTime? initialDate, DateTime? finalDate)
+        //{
+        //    using (var excel = application.GenerateExcelReport(initialDate, finalDate))
+        //    {
+        //        return File(excel.GetAsByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportName.xlsx");
+        //    }
+        //}
 
         #region ControllerBase and MVC Mock
         /*
