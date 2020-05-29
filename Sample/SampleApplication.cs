@@ -10,8 +10,7 @@ namespace ExcelReportGenerator.Sample
 {
     public class SampleApplication
     {
-
-        public ExcelPackage GenerateExcelReport(ICollection<SampleEntity> sampleReportables, ICollection<AnotherSampleEntity> anotherSampleEntities, ICollection<OtherSampleEntity> otherSampleEntities)
+        public ExcelPackage GenerateExcelReport(ICollection<SampleEntity> sampleEntities, ICollection<AnotherSampleEntity> anotherSampleEntities, ICollection<OtherSampleEntity> otherSampleEntities)
         {
             ReportGenerator reportGenerator = new ReportGenerator();
 
@@ -19,16 +18,16 @@ namespace ExcelReportGenerator.Sample
             reportGenerator.CreateWorksheet("SampleTable1");
 
             WorksheetColumns worksheetColumns1 = new WorksheetColumns();
-            worksheetColumns1.AddColumn<SampleEntity, int>("Id", e => e.Id <= 5 ? e.Id : 0);
-            worksheetColumns1.AddColumn<SampleEntity, string>("Name", e => e.Name == null ? "DefaultName" : e.Name);
+            worksheetColumns1.AddColumn<SampleEntity, int>("Id", e => e.Id <= 5 || e.Id > 15 ? e.Id : 0);
+            worksheetColumns1.AddColumn<SampleEntity, string>("Name", e => e.Name != null ? "DefaultName" : e.Name);
             worksheetColumns1.AddColumn<SampleEntity, DateTime>("Register Date", e => e.RegisterDate);
-            worksheetColumns1.AddColumn<SampleEntity, string>("City", e => e.AnotherSampleEntity.City);
+            worksheetColumns1.AddColumn<SampleEntity, string>("City", e => e.AnotherSampleEntity.City ?? "DefaultCity");
             worksheetColumns1.AddColumn<SampleEntity, string>("State", e => e.AnotherSampleEntity.State);
             worksheetColumns1.AddColumn<SampleEntity, string>("Country", e => e.AnotherSampleEntity.Country);
             worksheetColumns1.AddColumn<SampleEntity, string>("Active", e => e.AnotherSampleEntity.Active ? "Active" : "Inactive");
 
             reportGenerator.AddColumnsToWorksheet("SampleTable1", worksheetColumns1);
-            reportGenerator.AddDataToWorksheet("SampleTable1", sampleReportables);
+            reportGenerator.AddDataToWorksheet("SampleTable1", sampleEntities);
             #endregion Worksheet sample 1
 
             #region Worksheet sample 2

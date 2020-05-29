@@ -1,35 +1,20 @@
-﻿using System;
+﻿using ExcelReportGenerator.Sample.Model;
+using System.Collections.Generic;
 
 namespace ExcelReportGenerator.Sample
 {
-    class SampleController
+    class SampleController : FakeController
     {
-        //public IActionResult GenerateExcelReport([FromServices] SampleApplication application, DateTime? initialDate, DateTime? finalDate)
-        //{
-        //    using (var excel = application.GenerateExcelReport(initialDate, finalDate))
-        //    {
-        //        return File(excel.GetAsByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportName.xlsx");
-        //    }
-        //}
-
-        #region ControllerBase and MVC Mock
-        /*
-         * This part of code should not be implemented.
-         * This serve only as mock to the sample controller not fail.
-         */
-
-        private IActionResult File(byte[] vs, string v1, string v2)
+        public IActionResult GenerateExcelReport([FromServices] SampleApplication application)
         {
-            throw new NotImplementedException();
-        }
+            ICollection<SampleEntity> fakeSampleEntitiesCollection = new List<SampleEntity>();
+            ICollection<AnotherSampleEntity> fakeAnotherSampleEntitiesCollection = new List<AnotherSampleEntity>();
+            ICollection<OtherSampleEntity> fakeOtherSampleEntitiesCollection = new List<OtherSampleEntity>();
 
-        public interface IActionResult
-        {
+            using (var excel = application.GenerateExcelReport(fakeSampleEntitiesCollection, fakeAnotherSampleEntitiesCollection, fakeOtherSampleEntitiesCollection))
+            {
+                return File(excel.GetAsByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportName.xlsx");
+            }
         }
-
-        private class FromServicesAttribute : Attribute
-        {
-        }
-        #endregion
     }
 }

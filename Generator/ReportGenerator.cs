@@ -64,7 +64,8 @@ namespace ExcelReportGenerator.Generator
                     if (columnDefinition.DataMapping == null)
                         return false;
 
-                    row[columnDefinition.ColumnName] = ExpressionManager.AnaliseExpression(entity, columnDefinition.DataMapping.Body);
+                    Delegate compiledExpression = ExpressionHelper.CompileExpression(typeof(T), columnDefinition.DataMapping.Body);
+                    row[columnDefinition.ColumnName] = compiledExpression.DynamicInvoke(entity);
                 }
                 worksheetDefinition.Worksheet.Rows.Add(row);
             }
