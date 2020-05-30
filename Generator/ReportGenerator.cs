@@ -38,40 +38,6 @@ namespace ExcelReportGenerator.Generator
             return false;
         }
 
-        private void AddColumns(DataTable dataTable, IList columns)
-        {
-            foreach (var column in columns)
-            {
-                WorksheetColumnDefinition columnDefinition = (WorksheetColumnDefinition)column;
-                dataTable.Columns.Add(columnDefinition.ColumnName, columnDefinition.DataType);
-            }
-        }
-
-        public bool AddDataToWorksheet<T>(string worksheetName, ICollection<T> reportables)
-        {
-            WorksheetDefinition worksheetDefinition;
-            if (WorkSheets.ContainsKey(worksheetName))
-                worksheetDefinition = WorkSheets.GetValueOrDefault(worksheetName);
-            else
-                return false;
-
-            foreach (T entity in reportables)
-            {
-                DataRow row = worksheetDefinition.Worksheet.NewRow();
-                foreach (var column in worksheetDefinition.WorksheetColumns.Columns)
-                {
-                    WorksheetColumnDefinition columnDefinition = (WorksheetColumnDefinition)column;
-                    if (columnDefinition.DataMapping == null)
-                        return false;
-
-                    Delegate compiledExpression = ExpressionHelper.CompileExpression(typeof(T), columnDefinition.DataMapping.Body);
-                    row[columnDefinition.ColumnName] = compiledExpression.DynamicInvoke(entity);
-                }
-                worksheetDefinition.Worksheet.Rows.Add(row);
-            }
-            return true;
-        }
-
         public DataRow NewRow(string worksheetName)
         {
             if (WorkSheets.ContainsKey(worksheetName))
@@ -85,6 +51,47 @@ namespace ExcelReportGenerator.Generator
                 WorkSheets.GetValueOrDefault(worksheetName).Worksheet.Rows.Add(row);
         }
 
+        public bool AddDataToWorksheet<T>(string worksheetName, ICollection<T> reportables)
+        {
+            WorksheetDefinition worksheetDefinition;
+            if (WorkSheets.ContainsKey(worksheetName))
+                worksheetDefinition = WorkSheets.GetValueOrDefault(worksheetName);
+            else
+                return false;
+
+            foreach (T entity in reportables)
+            {
+                DataRow row = worksheetDefinition.Worksheet.NewRow();
+                List<DataRow> rows = new List<DataRow>() { row };
+                foreach (var column in worksheetDefinition.WorksheetColumns.Columns)
+                {
+                    WorksheetColumnDefinition columnDefinition = column;
+                    if (columnDefinition.DataMapping == null)
+                        return false;
+
+                    dynamic innerEntity = ExpressionHelper.GetInnerCollection(entity, columnDefinition.InnerCollection);
+                    if (!(innerEntity is IEnumerable))
+                        row[columnDefinition.ColumnName] = ExpressionHelper.GetValue(innerEntity, columnDefinition);
+                    else
+                    {
+                        IEnumerable enumerable = (IEnumerable)innerEntity;
+                        rows.Remove(row);
+                        foreach (dynamic item in enumerable)
+                        {
+                            DataRow newRow = worksheetDefinition.Worksheet.NewRow();
+                            newRow.ItemArray = row.ItemArray;
+                            newRow[columnDefinition.ColumnName] = ExpressionHelper.GetValue(item, columnDefinition);
+                            rows.Add(newRow);
+                        }
+                    }
+                }
+                rows.ForEach(r => worksheetDefinition.Worksheet.Rows.Add(r));
+            }
+            return true;
+        }
+
+
+
         public ExcelPackage GenerateExcelPackage(bool saveFormattedData)
         {
             var package = new ExcelPackage();
@@ -97,6 +104,15 @@ namespace ExcelReportGenerator.Generator
                     FormatTableData(worksheetDefinition.Worksheet, worksheet);
             }
             return package;
+        }
+
+        private void AddColumns(DataTable dataTable, ICollection<WorksheetColumnDefinition> columns)
+        {
+            foreach (var column in columns)
+            {
+                WorksheetColumnDefinition columnDefinition = column;
+                dataTable.Columns.Add(columnDefinition.ColumnName, columnDefinition.DataType);
+            }
         }
 
         private void FormatTableData(DataTable dataTable, ExcelWorksheet worksheet)

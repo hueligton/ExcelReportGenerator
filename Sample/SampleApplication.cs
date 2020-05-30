@@ -41,6 +41,7 @@ namespace ExcelReportGenerator.Sample
 
             #region Worksheet sample 3
             reportGenerator.CreateWorksheet("Other Sample Table");
+
             WorksheetColumns worksheetColumns3 = new WorksheetColumns();
             worksheetColumns3.AddColumn("Entity Id", typeof(int));
             worksheetColumns3.AddColumn("Name", typeof(string));
@@ -48,9 +49,28 @@ namespace ExcelReportGenerator.Sample
             worksheetColumns3.AddColumn("State", typeof(string));
             worksheetColumns3.AddColumn("Country", typeof(string));
             worksheetColumns3.AddColumn("Active", typeof(string));
+
             reportGenerator.AddColumnsToWorksheet("Other Sample Table", worksheetColumns3);
             AddDataToExcel(reportGenerator, "Other Sample Table", otherSampleEntities);
             #endregion Worksheet sample 3
+
+            #region Worksheet sample 4
+            reportGenerator.CreateWorksheet("Other Sample Table");
+            WorksheetColumns worksheetColumns4 = new WorksheetColumns();
+            worksheetColumns2.AddColumn<OtherSampleEntity, int>("Entity Id", e => e.Id);
+            worksheetColumns2.AddColumn<OtherSampleEntity, string>("Name", e => e.Name);
+            worksheetColumns4.JoinCollection<OtherSampleEntity, AnotherSampleEntity>(e => e.AnotherSampleEntities)
+                .AddColumn<AnotherSampleEntity, string>("City", e => e.City);
+            worksheetColumns4.JoinCollection<OtherSampleEntity, AnotherSampleEntity>(e => e.AnotherSampleEntities)
+                .AddColumn<AnotherSampleEntity, string>("State", e => e.State);
+            worksheetColumns4.JoinCollection<OtherSampleEntity, AnotherSampleEntity>(e => e.AnotherSampleEntities)
+                .AddColumn<AnotherSampleEntity, string>("Country", e => e.Country);
+            worksheetColumns4.JoinCollection<OtherSampleEntity, AnotherSampleEntity>(e => e.AnotherSampleEntities)
+                .AddColumn<AnotherSampleEntity, string>("Active", e => e.Active ? "Active" : "Inactive");
+
+            reportGenerator.AddColumnsToWorksheet("Other Sample Table", worksheetColumns3);
+            AddDataToExcel(reportGenerator, "Other Sample Table", otherSampleEntities);
+            #endregion Worksheet sample 4
 
             return reportGenerator.GenerateExcelPackage(saveFormattedData: true);
         }
